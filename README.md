@@ -242,3 +242,17 @@ OPENAI_API_KEY=sk-...          # OpenAI (default model: gpt-4o-mini)
 ```
 
 If both are set, Anthropic is used unless `AI_PROVIDER=openai`. Override models with `ANTHROPIC_MODEL` / `OPENAI_MODEL`. With no key, only the AI buttons are disabled; everything rule-based still works. `GET /api/ai/status` reports the active provider.
+
+## Deploy as a real website (Vercel)
+
+The repo is Vercel-ready: `vercel.json` builds the React app and serves the Express API as a serverless function (`api/index.js`).
+
+1. Sign in at vercel.com with GitHub, click **Add New... > Project**, and import `resume-iq`. Leave the root directory as `/`.
+2. Under **Environment Variables**, add `ANTHROPIC_API_KEY` (or `OPENAI_API_KEY`). Without a key the site still works; only the AI buttons are disabled.
+3. Click **Deploy**. Every push to `main` redeploys automatically.
+
+Notes: uploads are limited to 4 MB on serverless, files are processed in a temp directory and deleted immediately, and AI calls can take up to 60 seconds. For a long-running server instead, use the included `Dockerfile` (Render, Railway, Fly.io).
+
+## Company data
+
+`GET /api/companies` serves 70+ company profiles (industry, approximate size, headquarters, what they tend to look for). They are curated from general public information, **not scraped from LinkedIn**, whose terms prohibit scraping. Sizes and details are approximate and may be out of date; edit `backend/src/data/companyProfiles.js` to add or correct entries.
