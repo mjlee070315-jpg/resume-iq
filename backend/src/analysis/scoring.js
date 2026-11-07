@@ -4,6 +4,7 @@ import { analyzeQuantification } from "./quantAnalysis.js";
 import { matchAts } from "./atsMatch.js";
 import { checkGrammar } from "./grammarCheck.js";
 import { buildTimeline } from "./timelineBuilder.js";
+import { formatChecks } from "./backgroundAnalysis.js";
 
 const round1 = (n) => Math.round(n * 10) / 10;
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
@@ -26,7 +27,7 @@ function scoreExperienceLike(section, label) {
       score: 0,
       max: 20,
       found: false,
-      breakdown: [{ reason: `${label} 섹션을 찾을 수 없음`, points: 0 }],
+      breakdown: [{ reason: `${label} section not found`, points: 0 }],
     };
   }
 
@@ -34,18 +35,18 @@ function scoreExperienceLike(section, label) {
   let score = 0;
 
   score += 5;
-  breakdown.push({ reason: "섹션 존재", points: 5 });
+  breakdown.push({ reason: "Section present", points: 5 });
 
   const entryPts = clamp(section.entryCount, 0, 3) / 3 * 4;
   score += entryPts;
-  breakdown.push({ reason: `경험 항목 ${section.entryCount}개 감지`, points: round1(entryPts) });
+  breakdown.push({ reason: `${section.entryCount} entries detected`, points: round1(entryPts) });
 
   const avgBullets =
     section.entryCount > 0 ? section.bulletCount / section.entryCount : section.bulletCount;
   const bulletPts = clamp(avgBullets, 0, 2) / 2 * 4;
   score += bulletPts;
   breakdown.push({
-    reason: `항목당 평균 bullet ${avgBullets.toFixed(1)}개`,
+    reason: `Average ${avgBullets.toFixed(1)} bullets per entry`,
     points: round1(bulletPts),
   });
 
@@ -53,7 +54,7 @@ function scoreExperienceLike(section, label) {
   const quantPts = quant.ratio * 4;
   score += quantPts;
   breakdown.push({
-    reason: `정량화된 성과 비율 ${Math.round(quant.ratio * 100)}%`,
+    reason: `Quantified achievements: ${Math.round(quant.ratio * 100)}% of bullets`,
     points: round1(quantPts),
   });
 
@@ -63,7 +64,7 @@ function scoreExperienceLike(section, label) {
   const verbPts = (1 - weakRatio) * 3;
   score += verbPts;
   breakdown.push({
-    reason: `약한/과사용 동사 비율 ${Math.round(weakRatio * 100)}%`,
+    reason: `Weak/overused verbs: ${Math.round(weakRatio * 100)}% of bullets`,
     points: round1(verbPts),
   });
 
@@ -82,7 +83,7 @@ function scoreSkills(section) {
       score: 0,
       max: 20,
       found: false,
-      breakdown: [{ reason: "Skills 섹션을 찾을 수 없음", points: 0 }],
+      breakdown: [{ reason: "Skills section not found", points: 0 }],
     };
   }
 
@@ -90,11 +91,11 @@ function scoreSkills(section) {
   let score = 0;
 
   score += 5;
-  breakdown.push({ reason: "섹션 존재", points: 5 });
+  breakdown.push({ reason: "Section present", points: 5 });
 
   const countPts = clamp(section.entryCount, 0, 12) / 12 * 15;
   score += countPts;
-  breakdown.push({ reason: `스킬 키워드 ${section.entryCount}개 감지`, points: round1(countPts) });
+  breakdown.push({ reason: `${section.entryCount} skill keywords detected`, points: round1(countPts) });
 
   return { label: "Skills", score: round1(clamp(score, 0, 20)), max: 20, found: true, breakdown };
 }
@@ -183,6 +184,7 @@ export function analyzeResume(text, atsPresetName) {
     grammar,
     ats,
     warnings,
+    formatChecks: formatChecks(text),
   };
 }
 

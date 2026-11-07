@@ -52,7 +52,7 @@ export function matchCustomJob(resumeText, jobDescriptionText) {
       matchRatio: 0,
       fitScore: 0,
       note:
-        "이 공고에서 알려진 스킬/키워드를 감지하지 못했습니다. 공고 원문을 더 길게 붙여넣어 보세요.",
+        "No known skills or keywords were detected in this posting. Try pasting the full job description.",
     };
   }
 

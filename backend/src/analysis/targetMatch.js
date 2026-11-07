@@ -63,13 +63,13 @@ function buildRecommendations({ preset, keywordMatch, emphasis }) {
 
   if (keywordMatch.missing.length > 0) {
     recs.push(
-      `${preset.label}에서 자주 요구되는 키워드가 누락됨: ${keywordMatch.missing.slice(0, 6).join(", ")}`
+      `Keywords commonly expected for ${preset.label} are missing: ${keywordMatch.missing.slice(0, 6).join(", ")}`
     );
   }
 
   if (emphasis.weakestCategory && emphasis.alignmentScore < 85) {
     recs.push(
-      `${emphasis.weakestCategory} 관련 경험이 상대적으로 부족해 보임 — 이 영역을 더 강조하는 것을 고려`
+      `${emphasis.weakestCategory} experience looks under-represented; consider emphasizing it more`
     );
   }
 
@@ -77,10 +77,13 @@ function buildRecommendations({ preset, keywordMatch, emphasis }) {
   return recs;
 }
 
-export function matchTarget(text, verbHeatmap, targetId) {
-  const preset = TARGET_PRESETS[targetId];
+export function matchTarget(text, verbHeatmap, targetIdOrPreset) {
+  const preset =
+    typeof targetIdOrPreset === "object" && targetIdOrPreset
+      ? targetIdOrPreset
+      : TARGET_PRESETS[targetIdOrPreset];
   if (!preset) {
-    throw new Error(`Unknown target preset: "${targetId}"`);
+    throw new Error(`Unknown target preset: "${targetIdOrPreset}"`);
   }
 
   const keywordMatch = matchKeywords(text, preset.keywords);
