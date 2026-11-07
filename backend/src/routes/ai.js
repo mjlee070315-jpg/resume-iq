@@ -3,6 +3,9 @@ import { isAiConfigured } from "../ai/openaiClient.js";
 import { rewriteBullet } from "../ai/rewrite.js";
 import { chatAboutResume } from "../ai/chat.js";
 import { checkGrammarAi } from "../ai/grammarAi.js";
+import { generateTargetProfile, analyzeBackgroundFit } from "../ai/targetAnalysis.js";
+import { matchTarget } from "../analysis/targetMatch.js";
+import { analyzeBackground } from "../analysis/backgroundAnalysis.js";
 
 const router = express.Router();
 router.use(express.json({ limit: "2mb" }));
@@ -60,6 +63,22 @@ router.post("/chat", requireAiConfigured, async (req, res) => {
   try {
     const answer = await chatAboutResume({ question, resumeText, analysis, history });
     res.json({ answer });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post("/custom-target", requireAiConfigured, async (req, res) => {
+  const { name, type, jobTitle, resumeText, verbHeatmap } = req.body;
+  if (!name || !resumeText || !["company", "school"].includes(type)) {
+    return res.status(400).json({ error: "Need 'name', 'type' (company|school) and 'resumeText'" });
+  }
+  try {
+    const preset = await generateTargetProfile({ name: String(name).slice(0, 120), type, jobTitle });
+    const targetMatch = matchTarget(resumeText, verbHeatmap || {}, preset);
+    const background = analyzeBackground(resumeText, preset);
+    const insight = await analyzeBackgroundFit({ resumeText, background, targetMatch });
+    res.json({ targetMatch, background, insight });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
