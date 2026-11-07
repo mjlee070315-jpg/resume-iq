@@ -120,3 +120,15 @@ test("outlook returns a wide, capped range plus the fixed disclaimer", async () 
     mock.close();
   }
 });
+
+test("company explorer lists 70+ companies and each one is usable as a target", async () => {
+  const data = await (await fetch(base + "/api/companies")).json();
+  assert.ok(data.companies.length >= 70);
+  assert.ok(data.industries.length >= 8);
+  assert.match(data.note, /not linkedin/i);
+  const hit = await (await fetch(base + "/api/companies?q=cummins")).json();
+  assert.equal(hit.companies[0].name, "Cummins");
+  const { targets } = await (await fetch(base + "/api/targets")).json();
+  const ids = new Set(targets.map((t) => t.id));
+  for (const c of data.companies) assert.ok(ids.has(c.targetId), `${c.name} has no target preset`);
+});
