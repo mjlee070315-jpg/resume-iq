@@ -15,6 +15,21 @@ Every score returned by the API includes a `breakdown` array explaining exactly 
 rule contributed how many points — nothing is a black box. See `backend/src/analysis/scoring.js`
 for the full weighting logic and `Methodology` below for the reasoning behind it.
 
+
+## What's new in v2
+
+- **22 company and school presets** (Google, Apple, Microsoft, Netflix, NVIDIA, Tesla, Goldman, McKinsey, Stripe, MIT, Stanford, CMU, Berkeley, Georgia Tech, UIUC, Cornell, Michigan, Caltech, Purdue IE/Engineering, and more).
+- **Background profile** (`analysis/backgroundAnalysis.js`): rule-based extraction of schools, degrees, GPA, recognizable employers, research/internship/leadership signals, contact links, plus target-aware advice (for example, a missing GPA matters for grad programs).
+- **Format checks**: email/phone, length, overly long bullets, ATS-hostile layout.
+- **Any company or school, on demand** (`ai/targetAnalysis.js`, `POST /api/ai/custom-target`): AI drafts the evaluation criteria for any name you type, the deterministic matcher scores your resume against them, and AI writes a grounded background-fit review (strengths, gaps, next steps).
+- **New UI**: English interface, dark/light theme, drag-and-drop upload, paste-text mode, responsive layout, print/PDF and JSON export.
+- **Quality and deploy**: API tests (`npm run test:api`), GitHub Actions CI, rate limiting, upload validation, and a single-service `Dockerfile` (backend serves the built frontend).
+
+```bash
+# one-service deploy
+docker build -t resumeiq . && docker run -p 8080:8080 -e OPENAI_API_KEY=sk-... resumeiq
+```
+
 ## Project structure
 
 ```
