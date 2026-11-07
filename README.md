@@ -22,6 +22,7 @@ for the full weighting logic and `Methodology` below for the reasoning behind it
 - **Background profile** (`analysis/backgroundAnalysis.js`): rule-based extraction of schools, degrees, GPA, recognizable employers, research/internship/leadership signals, contact links, plus target-aware advice (for example, a missing GPA matters for grad programs).
 - **Format checks**: email/phone, length, overly long bullets, ATS-hostile layout.
 - **Any company or school, on demand** (`ai/targetAnalysis.js`, `POST /api/ai/custom-target`): AI drafts the evaluation criteria for any name you type, the deterministic matcher scores your resume against them, and AI writes a grounded background-fit review (strengths, gaps, next steps).
+- **Admission / hiring outlook** (`ai/outlook.js`, `POST /api/ai/outlook`): AI estimates how competitive you are for a chosen or custom target and builds a phased preparation plan, materials checklist, and likely interview questions. Always shown as a wide range (never a point estimate, capped at 90%), with a fixed server-side "not a guarantee" disclaimer.
 - **New UI**: English interface, dark/light theme, drag-and-drop upload, paste-text mode, responsive layout, print/PDF and JSON export.
 - **Quality and deploy**: API tests (`npm run test:api`), GitHub Actions CI, rate limiting, upload validation, and a single-service `Dockerfile` (backend serves the built frontend).
 
