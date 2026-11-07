@@ -71,7 +71,7 @@ test("AI features work end-to-end through the Anthropic provider (mock server)",
   process.env.ANTHROPIC_API_KEY = "test-key";
   try {
     const status = await (await fetch(base + "/api/ai/status")).json();
-    assert.deepEqual(status, { configured: true, provider: "anthropic" });
+    assert.deepEqual(status, { configured: true, provider: "anthropic", source: "server" });
 
     const res = await post("/api/ai/custom-target", { name: "Acme", type: "company", resumeText: RESUME, verbHeatmap: { Technical: 3, Leadership: 1 } });
     assert.equal(res.status, 200);
@@ -131,4 +131,43 @@ test("company explorer lists 70+ companies and each one is usable as a target", 
   const { targets } = await (await fetch(base + "/api/targets")).json();
   const ids = new Set(targets.map((t) => t.id));
   for (const c of data.companies) assert.ok(ids.has(c.targetId), `${c.name} has no target preset`);
+});
+
+test("bring-your-own-key: per-request key works, is required, and is never echoed", async () => {
+  delete process.env.ANTHROPIC_API_KEY;
+  delete process.env.OPENAI_API_KEY;
+  let seenKey = null;
+  const mock = http.createServer((req, res) => {
+    seenKey = req.headers["x-api-key"];
+    req.resume();
+    req.on("end", () => {
+      res.setHeader("content-type", "application/json");
+      res.end(JSON.stringify({ content: [{ type: "text", text: "OK" }] }));
+    });
+  });
+  await new Promise((r) => mock.listen(0, r));
+  process.env.ANTHROPIC_BASE_URL = `http://127.0.0.1:${mock.address().port}`;
+  const KEY = "sk-ant-user-supplied-key-1234567890";
+  const withKey = { "Content-Type": "application/json", "x-ai-provider": "anthropic", "x-ai-key": KEY };
+  try {
+    const none = await (await fetch(base + "/api/ai/status")).json();
+    assert.deepEqual(none, { configured: false, provider: null, source: null });
+    assert.equal((await fetch(base + "/api/ai/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })).status, 501);
+
+    const st = await fetch(base + "/api/ai/status", { headers: withKey });
+    const stBody = await st.text();
+    assert.deepEqual(JSON.parse(stBody), { configured: true, provider: "anthropic", source: "user" });
+    assert.ok(!stBody.includes(KEY), "key must never be echoed");
+
+    const v = await fetch(base + "/api/ai/verify", { method: "POST", headers: withKey, body: "{}" });
+    assert.equal(v.status, 200);
+    assert.equal(seenKey, KEY, "the user's key is what reaches the provider");
+
+    // a malformed key is ignored rather than used
+    const bad = await fetch(base + "/api/ai/status", { headers: { "x-ai-key": "short" } });
+    assert.equal((await bad.json()).configured, false);
+  } finally {
+    delete process.env.ANTHROPIC_BASE_URL;
+    mock.close();
+  }
 });
