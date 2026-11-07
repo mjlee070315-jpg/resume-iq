@@ -45,7 +45,7 @@ if (fs.existsSync(dist)) {
 }
 
 const PORT = process.env.PORT || 4000;
-if (process.env.NODE_ENV !== "test") {
+if (process.env.NODE_ENV !== "test" && !process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`ResumeIQ running on http://localhost:${PORT}`);
   });
