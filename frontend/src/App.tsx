@@ -4,6 +4,7 @@ import type { AnalysisResult } from "./types";
 import UploadPanel, { type AnalyzeInput } from "./components/UploadPanel";
 import BackgroundPanel from "./components/BackgroundPanel";
 import CustomTargetPanel from "./components/CustomTargetPanel";
+import OutlookPanel from "./components/OutlookPanel";
 import ScoreGauge from "./components/ScoreGauge";
 import CategoryScores from "./components/CategoryScores";
 import WarningsList from "./components/WarningsList";
@@ -123,6 +124,8 @@ function App() {
             </div>
 
             <WarningsList warnings={result.warnings} />
+
+            <OutlookPanel analysis={result} />
 
             {result.targetMatch && <TargetPanel match={result.targetMatch} />}
             {result.customJobMatch && <CustomJobPanel match={result.customJobMatch} />}

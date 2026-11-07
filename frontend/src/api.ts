@@ -1,4 +1,4 @@
-import type { AnalysisResult, TargetInfo, TargetMatch, BackgroundProfile, BackgroundInsight } from "./types";
+import type { AnalysisResult, TargetInfo, TargetMatch, BackgroundProfile, BackgroundInsight, Outlook } from "./types";
 
 export async function fetchPresets(): Promise<string[]> {
   const res = await fetch("/api/presets");
@@ -149,5 +149,30 @@ export async function analyzeCustomTarget(params: {
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || "Custom target analysis failed");
+  return data;
+}
+
+export interface OutlookResult {
+  targetMatch: TargetMatch;
+  background: BackgroundProfile;
+  outlook: Outlook;
+  disclaimer: string;
+}
+
+export async function fetchOutlook(params: {
+  resumeText: string;
+  analysis: AnalysisResult;
+  targetId?: string;
+  name?: string;
+  type?: "company" | "school";
+  jobTitle?: string;
+}): Promise<OutlookResult> {
+  const res = await fetch("/api/ai/outlook", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Outlook failed");
   return data;
 }

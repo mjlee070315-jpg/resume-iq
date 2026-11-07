@@ -139,3 +139,17 @@ export interface BackgroundInsight {
   gaps: string[];
   nextSteps: string[];
 }
+
+export interface Outlook {
+  band: "Long shot" | "Reach" | "Competitive" | "Target" | "Strong";
+  chanceLow: number;
+  chanceHigh: number;
+  confidence: "low" | "medium";
+  summary: string;
+  strengths: string[];
+  risks: string[];
+  unknowns: string[];
+  plan: { timeframe: string; goal: string; actions: string[] }[];
+  prepChecklist: string[];
+  interviewPrep: string[];
+}
