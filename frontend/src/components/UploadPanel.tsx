@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { fetchPresets, fetchTargets } from "../api";
 import type { TargetInfo } from "../types";
+import { SAMPLE_RESUME } from "../sample";
 
 export type AnalyzeInput =
   | { kind: "file"; file: File }
@@ -10,9 +11,10 @@ interface Props {
   onAnalyze: (input: AnalyzeInput, preset: string, target: string, jobDescription: string) => void;
   loading: boolean;
   error: string | null;
+  preferredTarget?: string;
 }
 
-export default function UploadPanel({ onAnalyze, loading, error }: Props) {
+export default function UploadPanel({ onAnalyze, loading, error, preferredTarget }: Props) {
   const [mode, setMode] = useState<"file" | "text">("file");
   const [file, setFile] = useState<File | null>(null);
   const [text, setText] = useState("");
@@ -35,8 +37,13 @@ export default function UploadPanel({ onAnalyze, loading, error }: Props) {
     fetchTargets().then(setTargets).catch(() => setTargets([]));
   }, []);
 
-  const companies = targets.filter((t) => t.type === "company");
-  const schools = targets.filter((t) => t.type === "school");
+  useEffect(() => {
+    if (preferredTarget) setTarget(preferredTarget);
+  }, [preferredTarget]);
+
+  const byLabel = (a: TargetInfo, b: TargetInfo) => a.label.localeCompare(b.label);
+  const companies = targets.filter((t) => t.type === "company").sort(byLabel);
+  const schools = targets.filter((t) => t.type === "school").sort(byLabel);
   const ready = mode === "file" ? !!file : text.trim().length > 50;
 
   function submit() {
@@ -88,9 +95,10 @@ export default function UploadPanel({ onAnalyze, loading, error }: Props) {
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           />
           <p className="text-sm text-neutral-200">{file ? file.name : "Drag & drop a file, or click to browse"}</p>
-          <p className="text-xs text-neutral-500 mt-1">PDF, DOCX or TXT, up to 5 MB</p>
+          <p className="text-xs text-neutral-500 mt-1">PDF, DOCX or TXT, up to 4 MB</p>
         </div>
       ) : (
+        <>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -98,7 +106,18 @@ export default function UploadPanel({ onAnalyze, loading, error }: Props) {
           placeholder="Paste your resume or statement of purpose here (at least a few lines)…"
           className="input w-full"
         />
+        </>
       )}
+      <button
+        type="button"
+        className="mt-2 text-xs text-violet-400 hover:text-violet-300"
+        onClick={() => {
+          setMode("text");
+          setText(SAMPLE_RESUME);
+        }}
+      >
+        No resume handy? Try a sample
+      </button>
 
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         <label className="flex flex-col gap-1 text-xs text-neutral-400">
