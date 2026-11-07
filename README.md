@@ -256,3 +256,13 @@ Notes: uploads are limited to 4 MB on serverless, files are processed in a temp 
 ## Company data
 
 `GET /api/companies` serves 70+ company profiles (industry, approximate size, headquarters, what they tend to look for). They are curated from general public information, **not scraped from LinkedIn**, whose terms prohibit scraping. Sizes and details are approximate and may be out of date; edit `backend/src/data/companyProfiles.js` to add or correct entries.
+
+## Bring your own key (users pay their own provider)
+
+On the public site, AI features run on **each user's own API key**. Click **AI key** in the header, choose Claude or OpenAI, paste a key, and press *Save & test*. The site never pays for anyone's usage.
+
+- The key is kept in the browser only (this tab by default, this device if "Remember" is checked) and sent in `x-ai-key` / `x-ai-provider` headers with AI requests over HTTPS.
+- The server holds it in a per-request async context, uses it for that request, and never stores or logs it. `GET /api/ai/status` reports `source: "user"` and never echoes the key.
+- Malformed keys are ignored, provider errors (bad key, no credit, rate limit) are translated into plain messages, and requests are rate limited per IP.
+- Everything non-AI (scoring, ATS and company matching, background analysis, exports) works with no key.
+- Self-hosting for yourself or a team? Setting `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` on the server still works as a fallback when a user has not supplied a key. Leave them unset on a public deployment so you are never billed.
