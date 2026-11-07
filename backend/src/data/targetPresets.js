@@ -6,6 +6,7 @@
 // this phase.
 
 import { EXTRA_PRESETS } from "./extraPresets.js";
+import { COMPANY_PRESETS } from "./companyProfiles.js";
 
 const BASE_PRESETS = {
   "google-swe": {
@@ -148,7 +149,7 @@ const BASE_PRESETS = {
   },
 };
 
-export const TARGET_PRESETS = { ...BASE_PRESETS, ...EXTRA_PRESETS };
+export const TARGET_PRESETS = { ...COMPANY_PRESETS, ...BASE_PRESETS, ...EXTRA_PRESETS };
 
 export const TARGET_LIST = Object.values(TARGET_PRESETS).map(
   ({ id, label, type }) => ({ id, label, type })
