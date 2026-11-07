@@ -79,7 +79,7 @@ export default function ChatPanel({
       {error && (
         <p className="text-xs text-red-400">
           {error.includes("OPENAI_API_KEY")
-            ? "AI chat is unavailable. Set OPENAI_API_KEY in backend/.env to enable it."
+            ? "AI chat is unavailable. Set ANTHROPIC_API_KEY or OPENAI_API_KEY in backend/.env to enable it."
             : error}
         </p>
       )}
