@@ -1,6 +1,8 @@
 import express from "express";
 import multer from "multer";
 import fs from "fs/promises";
+import os from "os";
+import path from "path";
 import { extractText } from "../parsing/extractText.js";
 import { analyzeResume } from "../analysis/scoring.js";
 import { PRESET_NAMES } from "../analysis/atsMatch.js";
@@ -8,12 +10,13 @@ import { matchTarget } from "../analysis/targetMatch.js";
 import { TARGET_LIST } from "../data/targetPresets.js";
 import { matchCustomJob } from "../analysis/customJobMatch.js";
 import { analyzeBackground } from "../analysis/backgroundAnalysis.js";
+import { COMPANY_PROFILES, INDUSTRIES } from "../data/companyProfiles.js";
 
 const router = express.Router();
 const ALLOWED_EXT = new Set(["pdf", "docx", "txt"]);
 const upload = multer({
-  dest: "uploads/",
-  limits: { fileSize: 5 * 1024 * 1024 },
+  dest: path.join(os.tmpdir(), "resumeiq-uploads"),
+  limits: { fileSize: 4 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const ext = file.originalname.split(".").pop().toLowerCase();
     cb(ALLOWED_EXT.has(ext) ? null : new Error("Unsupported file type. Use PDF, DOCX, or TXT."), ALLOWED_EXT.has(ext));
@@ -31,6 +34,17 @@ router.get("/presets", (req, res) => {
 
 router.get("/targets", (req, res) => {
   res.json({ targets: TARGET_LIST });
+});
+
+router.get("/companies", (req, res) => {
+  const q = String(req.query.q || "").toLowerCase().trim();
+  const industry = String(req.query.industry || "");
+  const list = COMPANY_PROFILES.filter(
+    (c) =>
+      (!industry || c.industry === industry) &&
+      (!q || c.name.toLowerCase().includes(q) || c.keywords.some((k) => k.includes(q)))
+  ).map((c) => ({ ...c, targetId: c.presetId || c.id }));
+  res.json({ industries: INDUSTRIES, companies: list, note: "Curated from public information; approximate and may be out of date. Not LinkedIn data." });
 });
 
 function withTargetMatch(result, text, targetId) {
