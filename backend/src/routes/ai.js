@@ -1,9 +1,11 @@
 import express from "express";
-import { isAiConfigured } from "../ai/openaiClient.js";
+import { isAiConfigured, activeProvider } from "../ai/llm.js";
 import { rewriteBullet } from "../ai/rewrite.js";
 import { chatAboutResume } from "../ai/chat.js";
 import { checkGrammarAi } from "../ai/grammarAi.js";
 import { generateTargetProfile, analyzeBackgroundFit } from "../ai/targetAnalysis.js";
+import { generateOutlook, OUTLOOK_DISCLAIMER } from "../ai/outlook.js";
+import { TARGET_PRESETS } from "../data/targetPresets.js";
 import { matchTarget } from "../analysis/targetMatch.js";
 import { analyzeBackground } from "../analysis/backgroundAnalysis.js";
 
@@ -11,14 +13,14 @@ const router = express.Router();
 router.use(express.json({ limit: "2mb" }));
 
 router.get("/status", (req, res) => {
-  res.json({ configured: isAiConfigured() });
+  res.json({ configured: isAiConfigured(), provider: activeProvider() });
 });
 
 function requireAiConfigured(req, res, next) {
   if (!isAiConfigured()) {
     return res.status(501).json({
       error:
-        "OPENAI_API_KEY is not configured on the server. Add it to backend/.env to enable AI features (Phase 2).",
+        "No AI key configured on the server. Set ANTHROPIC_API_KEY or OPENAI_API_KEY in backend/.env to enable AI features.",
     });
   }
   next();
@@ -79,6 +81,28 @@ router.post("/custom-target", requireAiConfigured, async (req, res) => {
     const background = analyzeBackground(resumeText, preset);
     const insight = await analyzeBackgroundFit({ resumeText, background, targetMatch });
     res.json({ targetMatch, background, insight });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post("/outlook", requireAiConfigured, async (req, res) => {
+  const { resumeText, analysis, targetId, name, type, jobTitle } = req.body;
+  if (!resumeText) return res.status(400).json({ error: "Missing 'resumeText'" });
+  try {
+    let preset;
+    if (targetId) {
+      preset = TARGET_PRESETS[targetId];
+      if (!preset) return res.status(400).json({ error: `Unknown target: "${targetId}"` });
+    } else if (name && ["company", "school"].includes(type)) {
+      preset = await generateTargetProfile({ name: String(name).slice(0, 120), type, jobTitle });
+    } else {
+      return res.status(400).json({ error: "Provide 'targetId' or 'name' + 'type' (company|school)" });
+    }
+    const targetMatch = matchTarget(resumeText, analysis?.verbHeatmap || {}, preset);
+    const background = analyzeBackground(resumeText, preset);
+    const outlook = await generateOutlook({ resumeText, analysis, background, targetMatch });
+    res.json({ targetMatch, background, outlook, disclaimer: OUTLOOK_DISCLAIMER });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
