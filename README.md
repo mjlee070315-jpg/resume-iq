@@ -229,3 +229,15 @@ tense-mix signal.
 - Backend: Node.js, Express
 - Parsing: pdf-parse, mammoth
 - AI: OpenAI API (`openai` npm package), Structured Outputs for the rewrite endpoint
+
+## AI provider setup
+
+AI features (rewrite, grammar check, chat, custom company/school analysis) work with **either** provider. Set one key in `backend/.env`:
+
+```
+ANTHROPIC_API_KEY=sk-ant-...   # Claude (default model: claude-haiku-4-5)
+# or
+OPENAI_API_KEY=sk-...          # OpenAI (default model: gpt-4o-mini)
+```
+
+If both are set, Anthropic is used unless `AI_PROVIDER=openai`. Override models with `ANTHROPIC_MODEL` / `OPENAI_MODEL`. With no key, only the AI buttons are disabled; everything rule-based still works. `GET /api/ai/status` reports the active provider.
