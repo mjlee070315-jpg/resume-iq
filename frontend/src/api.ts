@@ -176,3 +176,21 @@ export async function fetchOutlook(params: {
   if (!res.ok) throw new Error(data.error || "Outlook failed");
   return data;
 }
+
+export interface CompanyProfile {
+  id: string;
+  name: string;
+  industry: string;
+  size: string;
+  hq: string;
+  targetId: string;
+  keywords: string[];
+  emphasize: Record<string, number>;
+  tips: string[];
+}
+
+export async function fetchCompanies(): Promise<{ industries: string[]; companies: CompanyProfile[]; note: string }> {
+  const res = await fetch("/api/companies");
+  if (!res.ok) throw new Error("Failed to load companies");
+  return res.json();
+}
