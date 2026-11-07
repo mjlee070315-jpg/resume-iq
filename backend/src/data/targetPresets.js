@@ -5,7 +5,9 @@
 // live job-posting scraping here; that's a possible future extension, not
 // this phase.
 
-export const TARGET_PRESETS = {
+import { EXTRA_PRESETS } from "./extraPresets.js";
+
+const BASE_PRESETS = {
   "google-swe": {
     id: "google-swe",
     label: "Google — Software Engineer",
@@ -145,6 +147,8 @@ export const TARGET_PRESETS = {
     ],
   },
 };
+
+export const TARGET_PRESETS = { ...BASE_PRESETS, ...EXTRA_PRESETS };
 
 export const TARGET_LIST = Object.values(TARGET_PRESETS).map(
   ({ id, label, type }) => ({ id, label, type })
