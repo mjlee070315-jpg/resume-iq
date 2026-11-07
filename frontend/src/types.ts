@@ -110,4 +110,32 @@ export interface AnalysisResult {
   resumeText?: string;
   targetMatch?: TargetMatch;
   customJobMatch?: CustomJobMatch;
+  background?: BackgroundProfile;
+  formatChecks?: FormatCheck[];
+}
+
+export interface BackgroundProfile {
+  education: {
+    schools: string[];
+    degrees: string[];
+    gpa: { value: number; scale: number } | null;
+  };
+  employers: string[];
+  contact: { email: boolean; phone: boolean; linkedin: boolean; github: boolean };
+  signals: { research: boolean; internship: boolean; leadership: boolean };
+  wordCount: number;
+  insights: string[];
+}
+
+export interface FormatCheck {
+  ok: boolean;
+  label: string;
+  detail: string;
+}
+
+export interface BackgroundInsight {
+  summary: string;
+  strengths: string[];
+  gaps: string[];
+  nextSteps: string[];
 }

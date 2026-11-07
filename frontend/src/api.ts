@@ -1,4 +1,4 @@
-import type { AnalysisResult, TargetInfo } from "./types";
+import type { AnalysisResult, TargetInfo, TargetMatch, BackgroundProfile, BackgroundInsight } from "./types";
 
 export async function fetchPresets(): Promise<string[]> {
   const res = await fetch("/api/presets");
@@ -111,4 +111,43 @@ export async function chatAboutResumeAi(params: {
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || "Chat failed");
   return data.answer;
+}
+
+export async function analyzePastedText(
+  text: string,
+  preset: string,
+  target?: string,
+  jobDescription?: string
+): Promise<AnalysisResult> {
+  const res = await fetch("/api/analyze-text", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text, preset, target: target || undefined, jobDescription: jobDescription || undefined }),
+  });
+  const data = await res.json().catch(() => ({ error: "Unknown error" }));
+  if (!res.ok) throw new Error(data.error || "Analysis failed");
+  return data;
+}
+
+export interface CustomTargetResult {
+  targetMatch: TargetMatch;
+  background: BackgroundProfile;
+  insight: BackgroundInsight;
+}
+
+export async function analyzeCustomTarget(params: {
+  name: string;
+  type: "company" | "school";
+  jobTitle?: string;
+  resumeText: string;
+  verbHeatmap: Record<string, number>;
+}): Promise<CustomTargetResult> {
+  const res = await fetch("/api/ai/custom-target", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Custom target analysis failed");
+  return data;
 }

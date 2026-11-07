@@ -1,8 +1,84 @@
 @import "tailwindcss";
 
+/* Light theme: invert the neutral scale and darken status colors so every
+   existing neutral-* utility keeps working in both themes. */
+:root[data-theme="light"] {
+  --color-neutral-950: #f6f7fb;
+  --color-neutral-900: #ffffff;
+  --color-neutral-800: #e5e7ee;
+  --color-neutral-700: #cfd3de;
+  --color-neutral-600: #9aa1b2;
+  --color-neutral-500: #6b7280;
+  --color-neutral-400: #4b5563;
+  --color-neutral-300: #374151;
+  --color-neutral-200: #1f2937;
+  --color-neutral-100: #111827;
+  --color-emerald-300: #047857;
+  --color-emerald-400: #059669;
+  --color-amber-400: #b45309;
+  --color-yellow-400: #a16207;
+  --color-red-400: #dc2626;
+  --color-violet-400: #6d28d9;
+  --color-violet-300: #5b21b6;
+  --color-violet-950: #ede9fe;
+  --color-violet-100: #3b0764;
+  --color-violet-800: #c4b5fd;
+  --color-red-300: #b91c1c;
+  --color-amber-300: #92400e;
+}
+
 body {
   margin: 0;
-  background-color: #0b0d12;
-  color: #e5e7eb;
-  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--color-neutral-950);
+  color: var(--color-neutral-100);
+  font-family: Inter, system-ui, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.card {
+  border-radius: 1rem;
+  border: 1px solid var(--color-neutral-800);
+  background: color-mix(in srgb, var(--color-neutral-900) 70%, transparent);
+  padding: 1.5rem;
+  animation: rise 0.35s ease both;
+}
+.card-title { font-size: 0.875rem; font-weight: 600; color: var(--color-neutral-200); margin-bottom: 0.25rem; }
+.card-sub { font-size: 0.75rem; color: var(--color-neutral-500); margin-bottom: 1rem; }
+.label { font-size: 0.7rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-neutral-500); margin-bottom: 0.35rem; }
+.input {
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-neutral-700);
+  background: var(--color-neutral-900);
+  color: var(--color-neutral-100);
+  padding: 0.45rem 0.75rem;
+  font-size: 0.875rem;
+}
+.input:focus { outline: 2px solid #8b5cf6; outline-offset: 1px; }
+.btn {
+  border-radius: 0.5rem;
+  background: #7c3aed;
+  color: white;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+.btn:hover:not(:disabled) { background: #8b5cf6; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-ghost {
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-neutral-700);
+  color: var(--color-neutral-300);
+  padding: 0.35rem 0.8rem;
+  font-size: 0.75rem;
+}
+.btn-ghost:hover { border-color: var(--color-neutral-500); }
+
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .card { animation: none; } }
+
+@media print {
+  header, .no-print, textarea, .btn { display: none !important; }
+  body { background: white; }
+  :root { --color-neutral-950: #fff; }
 }

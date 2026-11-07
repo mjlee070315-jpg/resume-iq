@@ -1,7 +1,9 @@
-import { useState } from "react";
-import { analyzeResumeFile } from "./api";
+import { useEffect, useState } from "react";
+import { analyzeResumeFile, analyzePastedText } from "./api";
 import type { AnalysisResult } from "./types";
-import UploadPanel from "./components/UploadPanel";
+import UploadPanel, { type AnalyzeInput } from "./components/UploadPanel";
+import BackgroundPanel from "./components/BackgroundPanel";
+import CustomTargetPanel from "./components/CustomTargetPanel";
 import ScoreGauge from "./components/ScoreGauge";
 import CategoryScores from "./components/CategoryScores";
 import WarningsList from "./components/WarningsList";
@@ -21,8 +23,39 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    try {
+      const saved = localStorage.getItem("resumeiq-theme");
+      if (saved === "light" || saved === "dark") return saved;
+    } catch {
+      /* storage unavailable */
+    }
+    return window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  });
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    try {
+      localStorage.setItem("resumeiq-theme", theme);
+    } catch {
+      /* ignore */
+    }
+  }, [theme]);
+
+  function downloadJson() {
+    if (!result) return;
+    const { resumeText: _omit, ...rest } = result;
+    void _omit;
+    const blob = new Blob([JSON.stringify(rest, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "resumeiq-report.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
   async function handleAnalyze(
-    file: File,
+    input: AnalyzeInput,
     preset: string,
     target: string,
     jobDescription: string
@@ -30,7 +63,10 @@ function App() {
     setLoading(true);
     setError(null);
     try {
-      const res = await analyzeResumeFile(file, preset, target, jobDescription);
+      const res =
+        input.kind === "file"
+          ? await analyzeResumeFile(input.file, preset, target, jobDescription)
+          : await analyzePastedText(input.text, preset, target, jobDescription);
       setResult(res);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Analysis failed");
@@ -42,14 +78,39 @@ function App() {
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100">
-      <header className="border-b border-neutral-800 px-8 py-5">
-        <h1 className="text-xl font-semibold">ResumeIQ</h1>
-        <p className="text-sm text-neutral-500">
-          AI-powered Resume &amp; Statement Analyzer — rule-based core, AI-assisted polish
-        </p>
+      <header className="border-b border-neutral-800 px-4 py-4 sm:px-8">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight">
+              Resume<span className="text-violet-400">IQ</span>
+            </h1>
+            <p className="text-xs text-neutral-500 sm:text-sm">
+              Explainable resume &amp; SOP analysis. Rule-based core, AI-assisted polish.
+            </p>
+          </div>
+          <div className="no-print flex gap-2">
+            {result && (
+              <>
+                <button className="btn-ghost" onClick={() => window.print()}>
+                  Print / PDF
+                </button>
+                <button className="btn-ghost" onClick={downloadJson}>
+                  JSON
+                </button>
+              </>
+            )}
+            <button
+              className="btn-ghost"
+              aria-label="Toggle color theme"
+              onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+            >
+              {theme === "dark" ? "Light" : "Dark"}
+            </button>
+          </div>
+        </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-8 py-8 flex flex-col gap-6">
+      <main className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-6 sm:px-8 sm:py-8">
         <UploadPanel onAnalyze={handleAnalyze} loading={loading} error={error} />
 
         {result && (
@@ -65,6 +126,12 @@ function App() {
 
             {result.targetMatch && <TargetPanel match={result.targetMatch} />}
             {result.customJobMatch && <CustomJobPanel match={result.customJobMatch} />}
+
+            {result.background && (
+              <BackgroundPanel background={result.background} formatChecks={result.formatChecks} />
+            )}
+
+            <CustomTargetPanel analysis={result} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <ScoreRadar scores={result.categoryScores} />
