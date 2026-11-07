@@ -11,20 +11,20 @@ export default function TargetPanel({ match }: { match: TargetMatch }) {
     <div className="rounded-2xl border border-violet-800/50 bg-violet-950/20 p-6">
       <div className="flex items-baseline justify-between mb-1">
         <h3 className="text-sm font-semibold text-neutral-200">
-          맞춤 분석 — {match.target.label}
+          Target fit — {match.target.label}
         </h3>
         <span className={`text-lg font-bold ${fitColor(match.fitScore)}`}>
           {match.fitScore}/100
         </span>
       </div>
       <p className="text-xs text-neutral-500 mb-4">
-        키워드 매칭(60%) + 경험 강조 정렬도(40%)로 계산된 rule-based fit score
+        Rule-based fit score: keyword match (60%) + experience emphasis alignment (40%)
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
           <p className="text-xs text-neutral-500 mb-2">
-            매칭된 키워드 ({match.keywords.matched.length}/
+            Matched keywords ({match.keywords.matched.length}/
             {match.keywords.matched.length + match.keywords.missing.length})
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -39,7 +39,7 @@ export default function TargetPanel({ match }: { match: TargetMatch }) {
           </div>
         </div>
         <div>
-          <p className="text-xs text-neutral-500 mb-2">누락된 키워드</p>
+          <p className="text-xs text-neutral-500 mb-2">Missing keywords</p>
           <div className="flex flex-wrap gap-1.5">
             {match.keywords.missing.map((k) => (
               <span
@@ -55,11 +55,11 @@ export default function TargetPanel({ match }: { match: TargetMatch }) {
 
       <div className="mb-4">
         <p className="text-xs text-neutral-500 mb-2">
-          경험 강조 정렬도 — {match.emphasis.alignmentScore}/100
+          Emphasis alignment — {match.emphasis.alignmentScore}/100
           {match.emphasis.weakestCategory && (
             <span className="text-amber-400">
               {" "}
-              (가장 부족: {match.emphasis.weakestCategory})
+              (weakest: {match.emphasis.weakestCategory})
             </span>
           )}
         </p>
@@ -78,7 +78,7 @@ export default function TargetPanel({ match }: { match: TargetMatch }) {
                   <div
                     className="absolute h-2 w-0.5 bg-neutral-300"
                     style={{ left: `${target}%` }}
-                    title={`목표 비중 ${target}%`}
+                    title={`Target weight ${target}%`}
                   />
                 </div>
                 <span className="w-10 text-right text-neutral-500">{actual}%</span>
@@ -87,12 +87,12 @@ export default function TargetPanel({ match }: { match: TargetMatch }) {
           })}
         </div>
         <p className="mt-1 text-[11px] text-neutral-600">
-          보라색 막대 = 현재 이력서 비중, 흰색 선 = {match.target.label} 권장 비중
+          Violet bar = your resume's share, white line = {match.target.label} recommended share
         </p>
       </div>
 
       <div>
-        <p className="text-xs text-neutral-500 mb-2">추천 사항</p>
+        <p className="text-xs text-neutral-500 mb-2">Recommendations</p>
         <ul className="flex flex-col gap-1.5">
           {match.recommendations.map((r, i) => (
             <li key={i} className="text-sm text-neutral-300">

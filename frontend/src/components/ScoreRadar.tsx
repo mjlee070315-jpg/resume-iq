@@ -20,15 +20,15 @@ export default function ScoreRadar({ scores }: { scores: CategoryScores }) {
       <div style={{ width: "100%", height: 260 }}>
         <ResponsiveContainer>
           <RadarChart data={data} outerRadius="75%">
-            <PolarGrid stroke="#27272a" />
+            <PolarGrid stroke="var(--color-neutral-700)" />
             <PolarAngleAxis
               dataKey="category"
-              tick={{ fill: "#a3a3a3", fontSize: 12 }}
+              tick={{ fill: "var(--color-neutral-400)", fontSize: 12 }}
             />
             <PolarRadiusAxis
               angle={30}
               domain={[0, 100]}
-              tick={{ fill: "#525252", fontSize: 10 }}
+              tick={{ fill: "var(--color-neutral-500)", fontSize: 10 }}
             />
             <Radar
               dataKey="value"

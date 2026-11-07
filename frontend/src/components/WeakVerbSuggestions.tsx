@@ -40,14 +40,14 @@ function RewriteCard({ item }: { item: Flagged }) {
           disabled={loading}
           className="mt-2 rounded-md bg-violet-600/20 px-3 py-1 text-xs font-medium text-violet-300 hover:bg-violet-600/30 disabled:opacity-40"
         >
-          {loading ? "AI가 재작성 중..." : "AI로 재작성"}
+          {loading ? "Rewriting…" : "Rewrite with AI"}
         </button>
       )}
 
       {error && (
         <p className="mt-2 text-xs text-red-400">
           {error.includes("OPENAI_API_KEY")
-            ? "AI 기능을 사용하려면 backend/.env에 OPENAI_API_KEY를 설정하세요 (Phase 2)."
+            ? "AI rewrite is unavailable. Set OPENAI_API_KEY in backend/.env to enable it."
             : error}
         </p>
       )}
@@ -76,7 +76,7 @@ export default function WeakVerbSuggestions({ flagged }: { flagged: Flagged[] })
         <h3 className="text-sm font-semibold text-neutral-300 mb-2">
           Sentence-level Suggestions
         </h3>
-        <p className="text-sm text-emerald-400">약한 동사가 감지되지 않았습니다.</p>
+        <p className="text-sm text-emerald-400">No weak verbs detected.</p>
       </div>
     );
   }

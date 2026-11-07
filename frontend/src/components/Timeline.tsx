@@ -12,7 +12,7 @@ export default function Timeline({ entries }: { entries: TimelineEntry[] }) {
       <div className="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
         <h3 className="text-sm font-semibold text-neutral-300 mb-2">Timeline</h3>
         <p className="text-sm text-neutral-500">
-          날짜 정보를 감지하지 못했습니다. (예: "2023 - 2024" 형식의 날짜가 필요합니다)
+          No dates detected. Use ranges like "2023 - 2024".
         </p>
       </div>
     );

@@ -37,7 +37,7 @@ export default function SectionBreakdown({
     <div className="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-6">
       <h3 className="text-sm font-semibold text-neutral-300 mb-2">
         Section Scores{" "}
-        <span className="font-normal text-neutral-500">(클릭해서 근거 보기)</span>
+        <span className="font-normal text-neutral-500">(click to see why)</span>
       </h3>
       {sections.map((s) => (
         <Row key={s.label} section={s} />

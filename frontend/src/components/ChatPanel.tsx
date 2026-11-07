@@ -73,13 +73,13 @@ export default function ChatPanel({
             {m.content}
           </div>
         ))}
-        {loading && <p className="text-xs text-neutral-500">AI가 답변을 작성 중...</p>}
+        {loading && <p className="text-xs text-neutral-500">AI is writing a reply…</p>}
       </div>
 
       {error && (
         <p className="text-xs text-red-400">
           {error.includes("OPENAI_API_KEY")
-            ? "AI 채팅을 사용하려면 backend/.env에 OPENAI_API_KEY를 설정하세요 (Phase 2)."
+            ? "AI chat is unavailable. Set OPENAI_API_KEY in backend/.env to enable it."
             : error}
         </p>
       )}

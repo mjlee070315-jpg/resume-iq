@@ -20,7 +20,7 @@ export default function ScoreGauge({ score }: Props) {
           cx="90"
           cy="90"
           r={radius}
-          stroke="#27272a"
+          stroke="var(--color-neutral-800)"
           strokeWidth="14"
           fill="none"
         />
@@ -43,7 +43,7 @@ export default function ScoreGauge({ score }: Props) {
           textAnchor="middle"
           fontSize="36"
           fontWeight="600"
-          fill="#f5f5f5"
+          fill="var(--color-neutral-100)"
         >
           {Math.round(score)}
         </text>

@@ -38,19 +38,19 @@ export default function GrammarPanel({
             disabled={loading}
             className="rounded-md bg-violet-600/20 px-3 py-1 text-xs font-medium text-violet-300 hover:bg-violet-600/30 disabled:opacity-40"
           >
-            {loading ? "AI가 검사 중..." : "AI로 문법 검사"}
+            {loading ? "AI is checking…" : "Check grammar with AI"}
           </button>
         )}
       </div>
       <p className="text-xs text-neutral-500 mb-3">
-        규칙 기반 검사는 대문자/띄어쓰기/시제 혼용만 잡아냅니다. AI 검사는 주어-동사 일치,
-        관사/전치사, 병렬 구조 등 정규식으로 잡기 어려운 문제를 추가로 찾아줍니다.
+        The rule-based check only catches capitalization, spacing, and tense mixing. The AI check
+        adds subject-verb agreement, articles/prepositions, parallelism, and awkward phrasing.
       </p>
 
       {error && (
         <p className="text-xs text-red-400">
           {error.includes("OPENAI_API_KEY")
-            ? "AI 문법 검사를 사용하려면 backend/.env에 OPENAI_API_KEY를 설정하세요."
+            ? "AI grammar check is unavailable. Set OPENAI_API_KEY in backend/.env to enable it."
             : error}
         </p>
       )}
@@ -60,7 +60,7 @@ export default function GrammarPanel({
           <p className="text-sm text-neutral-300">{result.overallAssessment}</p>
           {result.issues.length === 0 ? (
             <p className="text-sm text-emerald-400">
-              AI가 추가로 발견한 문법 이슈가 없습니다.
+              The AI found no additional grammar issues.
             </p>
           ) : (
             result.issues.map((issue, i) => (

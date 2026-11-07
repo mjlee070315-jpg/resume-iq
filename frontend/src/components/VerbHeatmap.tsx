@@ -34,14 +34,14 @@ export default function VerbHeatmap({ data }: { data: Record<string, number> }) 
               dataKey="category"
               type="category"
               width={100}
-              tick={{ fill: "#a3a3a3", fontSize: 12 }}
+              tick={{ fill: "var(--color-neutral-400)", fontSize: 12 }}
               axisLine={false}
               tickLine={false}
             />
             <Tooltip
               contentStyle={{
-                background: "#18181b",
-                border: "1px solid #27272a",
+                background: "var(--color-neutral-900)",
+                border: "1px solid var(--color-neutral-700)",
                 fontSize: 12,
               }}
             />
