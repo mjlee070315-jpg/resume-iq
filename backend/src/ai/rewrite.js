@@ -1,4 +1,4 @@
-import { getOpenAiClient, CHAT_MODEL } from "./openaiClient.js";
+import { completeJson } from "./llm.js";
 
 const REWRITE_SCHEMA = {
   name: "resume_bullet_rewrite",
@@ -31,8 +31,6 @@ const REWRITE_SCHEMA = {
  * replacements) rather than asking the model to analyze from scratch.
  */
 export async function rewriteBullet({ sentence, flaggedTerm, suggestions, sectionLabel }) {
-  const client = getOpenAiClient();
-
   const systemPrompt = `You are a resume writing assistant embedded in ResumeIQ, a resume analysis tool.
 A rule-based analyzer (not you) already flagged the weak/generic term "${flaggedTerm}" in the sentence below and suggested these stronger verbs: ${suggestions.join(", ")}.
 Rewrite the bullet to:
@@ -42,17 +40,10 @@ Rewrite the bullet to:
 - stay under 25 words
 Return concise, resume-appropriate language for the "${sectionLabel}" section.`;
 
-  const response = await client.chat.completions.create({
-    model: CHAT_MODEL,
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: `Original bullet: "${sentence}"` },
-    ],
-    response_format: { type: "json_schema", json_schema: REWRITE_SCHEMA },
+  return completeJson({
+    system: systemPrompt,
+    user: `Original bullet: "${sentence}"`,
+    schema: REWRITE_SCHEMA,
     temperature: 0.4,
   });
-
-  const raw = response.choices[0]?.message?.content;
-  if (!raw) throw new Error("No response from model");
-  return JSON.parse(raw);
 }

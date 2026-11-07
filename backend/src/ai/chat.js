@@ -1,4 +1,4 @@
-import { getOpenAiClient, CHAT_MODEL } from "./openaiClient.js";
+import { completeText } from "./llm.js";
 
 /**
  * Free-form Q&A about the resume/SOP. Grounded in the Phase 1 rule-based
@@ -7,8 +7,6 @@ import { getOpenAiClient, CHAT_MODEL } from "./openaiClient.js";
  * consistent with what the dashboard already shows the user.
  */
 export async function chatAboutResume({ question, resumeText, analysis, history = [] }) {
-  const client = getOpenAiClient();
-
   const contextSummary = summarizeAnalysis(analysis);
 
   const systemPrompt = `You are the "Ask AI" assistant inside ResumeIQ, a resume/SOP analysis tool.
@@ -22,19 +20,11 @@ Answer the user's question directly and specifically, referencing concrete lines
 ${resumeText.slice(0, 6000)}
 --- END DOCUMENT TEXT ---`;
 
-  const messages = [
-    { role: "system", content: systemPrompt },
-    ...history,
-    { role: "user", content: question },
-  ];
-
-  const response = await client.chat.completions.create({
-    model: CHAT_MODEL,
-    messages,
+  return completeText({
+    system: systemPrompt,
+    messages: [...history, { role: "user", content: question }],
     temperature: 0.5,
   });
-
-  return response.choices[0]?.message?.content ?? "";
 }
 
 function summarizeAnalysis(analysis) {

@@ -1,4 +1,4 @@
-import { getOpenAiClient, CHAT_MODEL } from "./openaiClient.js";
+import { completeJson } from "./llm.js";
 
 const GRAMMAR_SCHEMA = {
   name: "resume_grammar_check",
@@ -50,8 +50,6 @@ const GRAMMAR_SCHEMA = {
  * instead of re-flagging the same coarse tense-mix issue.
  */
 export async function checkGrammarAi({ text, ruleBasedGrammar }) {
-  const client = getOpenAiClient();
-
   const systemPrompt = `You are a resume proofreading assistant inside ResumeIQ.
 A rule-based checker already ran and found: ${ruleBasedGrammar?.issueCount ?? 0} basic issues
 (capitalization/spacing), ${ruleBasedGrammar?.pastTenseCount ?? 0} past-tense and
@@ -64,17 +62,10 @@ or wordy phrasing. Only flag real issues — do not invent problems in already-c
 sentences. Return at most 8 issues, prioritizing the most impactful ones. Keep the document
 professional resume language, don't rewrite content/facts, only grammar and structure.`;
 
-  const response = await client.chat.completions.create({
-    model: CHAT_MODEL,
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: text.slice(0, 6000) },
-    ],
-    response_format: { type: "json_schema", json_schema: GRAMMAR_SCHEMA },
+  return completeJson({
+    system: systemPrompt,
+    user: text.slice(0, 6000),
+    schema: GRAMMAR_SCHEMA,
     temperature: 0.2,
   });
-
-  const raw = response.choices[0]?.message?.content;
-  if (!raw) throw new Error("No response from model");
-  return JSON.parse(raw);
 }
