@@ -46,8 +46,8 @@ function RewriteCard({ item }: { item: Flagged }) {
 
       {error && (
         <p className="mt-2 text-xs text-red-400">
-          {error.includes("OPENAI_API_KEY")
-            ? "AI rewrite is unavailable. Set ANTHROPIC_API_KEY or OPENAI_API_KEY in backend/.env to enable it."
+          {error.includes("API key")
+            ? "AI rewrite needs your own API key. Click \"AI key\" at the top of the page to add one."
             : error}
         </p>
       )}

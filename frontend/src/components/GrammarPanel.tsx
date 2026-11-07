@@ -49,8 +49,8 @@ export default function GrammarPanel({
 
       {error && (
         <p className="text-xs text-red-400">
-          {error.includes("OPENAI_API_KEY")
-            ? "AI grammar check is unavailable. Set ANTHROPIC_API_KEY or OPENAI_API_KEY in backend/.env to enable it."
+          {error.includes("API key")
+            ? "AI grammar check needs your own API key. Click \"AI key\" at the top of the page to add one."
             : error}
         </p>
       )}

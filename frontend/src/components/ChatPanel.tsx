@@ -78,8 +78,8 @@ export default function ChatPanel({
 
       {error && (
         <p className="text-xs text-red-400">
-          {error.includes("OPENAI_API_KEY")
-            ? "AI chat is unavailable. Set ANTHROPIC_API_KEY or OPENAI_API_KEY in backend/.env to enable it."
+          {error.includes("API key")
+            ? "AI chat needs your own API key. Click \"AI key\" at the top of the page to add one."
             : error}
         </p>
       )}

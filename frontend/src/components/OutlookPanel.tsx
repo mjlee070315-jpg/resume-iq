@@ -107,7 +107,7 @@ export default function OutlookPanel({ analysis }: { analysis: AnalysisResult })
       </div>
       {error && (
         <p className="mt-3 text-sm text-red-400">
-          {error.includes("API_KEY") ? "AI is not configured on the server. Set ANTHROPIC_API_KEY or OPENAI_API_KEY in backend/.env." : error}
+          {error}
         </p>
       )}
 
