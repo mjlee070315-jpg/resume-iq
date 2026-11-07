@@ -4,11 +4,36 @@
 //   OPENAI_API_KEY    -> OpenAI (default model: gpt-4o-mini)
 // If both are set, Anthropic wins unless AI_PROVIDER=openai.
 
-import { getOpenAiClient, CHAT_MODEL as OPENAI_MODEL } from "./openaiClient.js";
+import { AsyncLocalStorage } from "node:async_hooks";
+import OpenAI from "openai";
+import { CHAT_MODEL as OPENAI_MODEL } from "./openaiClient.js";
+
+// Bring-your-own-key: a user's key arrives per request (headers) and lives only in
+// this request's async context. It is never stored, logged, or sent anywhere except
+// the chosen provider. Server env keys remain an optional fallback for self-hosting.
+const store = new AsyncLocalStorage();
+
+export function runWithCredentials({ provider, key }, fn) {
+  const k = typeof key === "string" ? key.trim() : "";
+  const valid = k.length >= 20 && k.length <= 400 && !/\s/.test(k);
+  const p = provider === "openai" || provider === "anthropic" ? provider : k.startsWith("sk-ant-") ? "anthropic" : "openai";
+  return store.run(valid ? { provider: p, key: k } : null, fn);
+}
 
 const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || "claude-haiku-4-5";
 
+function userCreds() {
+  return store.getStore() || null;
+}
+
+export function credentialSource() {
+  if (userCreds()) return "user";
+  return process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY ? "server" : null;
+}
+
 export function activeProvider() {
+  const u = userCreds();
+  if (u) return u.provider;
   const forced = process.env.AI_PROVIDER?.toLowerCase();
   if (forced === "openai" && process.env.OPENAI_API_KEY) return "openai";
   if (forced === "anthropic" && process.env.ANTHROPIC_API_KEY) return "anthropic";
@@ -21,12 +46,29 @@ export function isAiConfigured() {
   return activeProvider() !== null;
 }
 
+function apiKey(provider) {
+  const u = userCreds();
+  if (u) return u.key;
+  return provider === "anthropic" ? process.env.ANTHROPIC_API_KEY : process.env.OPENAI_API_KEY;
+}
+
+function openaiClient() {
+  return new OpenAI({ apiKey: apiKey("openai") });
+}
+
+function friendlyProviderError(provider, status, message) {
+  if (status === 401 || status === 403) return `The ${provider === "anthropic" ? "Anthropic" : "OpenAI"} key was rejected. Check that it is correct and active.`;
+  if (status === 402 || /credit|billing|quota/i.test(message || "")) return "Your API account has no credit left. Add credit in your provider's billing page and try again.";
+  if (status === 429) return "Your API account hit a rate limit. Wait a moment and try again.";
+  return message || `${provider} API error (${status})`;
+}
+
 async function anthropicMessage({ system, messages, temperature }) {
   const res = await fetch(`${process.env.ANTHROPIC_BASE_URL || "https://api.anthropic.com"}/v1/messages`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      "x-api-key": process.env.ANTHROPIC_API_KEY,
+      "x-api-key": apiKey("anthropic"),
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
@@ -38,7 +80,7 @@ async function anthropicMessage({ system, messages, temperature }) {
     }),
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data?.error?.message || `Anthropic API error (${res.status})`);
+  if (!res.ok) throw new Error(friendlyProviderError("anthropic", res.status, data?.error?.message));
   return (data.content ?? []).filter((b) => b.type === "text").map((b) => b.text).join("");
 }
 
@@ -47,13 +89,16 @@ export async function completeText({ system, messages, temperature = 0.5 }) {
   if (activeProvider() === "anthropic") {
     return anthropicMessage({ system, messages, temperature });
   }
-  const client = getOpenAiClient();
-  const response = await client.chat.completions.create({
-    model: OPENAI_MODEL,
-    messages: [{ role: "system", content: system }, ...messages],
-    temperature,
-  });
-  return response.choices[0]?.message?.content ?? "";
+  try {
+    const response = await openaiClient().chat.completions.create({
+      model: OPENAI_MODEL,
+      messages: [{ role: "system", content: system }, ...messages],
+      temperature,
+    });
+    return response.choices[0]?.message?.content ?? "";
+  } catch (e) {
+    throw new Error(friendlyProviderError("openai", e.status, e.message));
+  }
 }
 
 function parseJsonLoose(raw) {
@@ -73,16 +118,20 @@ export async function completeJson({ system, user, schema, temperature = 0.3 }) 
     });
     return parseJsonLoose(raw);
   }
-  const client = getOpenAiClient();
-  const response = await client.chat.completions.create({
-    model: OPENAI_MODEL,
-    messages: [
-      { role: "system", content: system },
-      { role: "user", content: user },
-    ],
-    response_format: { type: "json_schema", json_schema: { ...schema, strict: true } },
-    temperature,
-  });
+  let response;
+  try {
+    response = await openaiClient().chat.completions.create({
+      model: OPENAI_MODEL,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+      response_format: { type: "json_schema", json_schema: { ...schema, strict: true } },
+      temperature,
+    });
+  } catch (e) {
+    throw new Error(friendlyProviderError("openai", e.status, e.message));
+  }
   const raw = response.choices[0]?.message?.content;
   if (!raw) throw new Error("No response from model");
   return JSON.parse(raw);
