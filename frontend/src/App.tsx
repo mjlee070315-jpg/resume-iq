@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { getAiKey, subscribeAiKey } from "./aiKey";
+import AiKeyModal from "./components/AiKeyModal";
 import { analyzeResumeFile, analyzePastedText } from "./api";
 import type { AnalysisResult } from "./types";
 import UploadPanel, { type AnalyzeInput } from "./components/UploadPanel";
@@ -28,6 +30,8 @@ function App() {
   const [tab, setTab] = useState<"overview" | "fit" | "details" | "ai">("overview");
   const [preferredTarget, setPreferredTarget] = useState("");
   const [toast, setToast] = useState<string | null>(null);
+  const [keyOpen, setKeyOpen] = useState(false);
+  const hasKey = useSyncExternalStore(subscribeAiKey, () => getAiKey() !== null);
 
   const [theme, setTheme] = useState<"dark" | "light">(() => {
     try {
@@ -125,6 +129,9 @@ function App() {
                 </button>
               </>
             )}
+            <button className="btn-ghost" onClick={() => setKeyOpen(true)} aria-label="Set your AI API key">
+              {hasKey ? "AI key ✓" : "AI key"}
+            </button>
             <button className="btn-ghost" aria-label="Toggle color theme" onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}>
               {theme === "dark" ? "Light" : "Dark"}
             </button>
@@ -241,6 +248,8 @@ function App() {
           </>
         )}
       </main>
+
+      <AiKeyModal open={keyOpen} onClose={() => setKeyOpen(false)} />
 
       <footer className="no-print border-t border-neutral-800 px-4 py-6 text-center text-xs text-neutral-500 sm:px-8">
         <p>

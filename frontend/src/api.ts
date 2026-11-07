@@ -1,3 +1,4 @@
+import { aiHeaders } from "./aiKey";
 import type { AnalysisResult, TargetInfo, TargetMatch, BackgroundProfile, BackgroundInsight, Outlook } from "./types";
 
 export async function fetchPresets(): Promise<string[]> {
@@ -39,7 +40,7 @@ export async function analyzeResumeFile(
 }
 
 export async function fetchAiStatus(): Promise<{ configured: boolean }> {
-  const res = await fetch("/api/ai/status");
+  const res = await fetch("/api/ai/status", { headers: aiHeaders() });
   if (!res.ok) return { configured: false };
   return res.json();
 }
@@ -58,7 +59,7 @@ export async function rewriteBulletAi(params: {
 }): Promise<RewriteResult> {
   const res = await fetch("/api/ai/rewrite", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: aiHeaders(),
     body: JSON.stringify(params),
   });
   const data = await res.json();
@@ -84,7 +85,7 @@ export async function checkGrammarAi(params: {
 }): Promise<GrammarCheckResult> {
   const res = await fetch("/api/ai/grammar-check", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: aiHeaders(),
     body: JSON.stringify(params),
   });
   const data = await res.json();
@@ -105,7 +106,7 @@ export async function chatAboutResumeAi(params: {
 }): Promise<string> {
   const res = await fetch("/api/ai/chat", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: aiHeaders(),
     body: JSON.stringify(params),
   });
   const data = await res.json();
@@ -144,7 +145,7 @@ export async function analyzeCustomTarget(params: {
 }): Promise<CustomTargetResult> {
   const res = await fetch("/api/ai/custom-target", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: aiHeaders(),
     body: JSON.stringify(params),
   });
   const data = await res.json();
@@ -169,7 +170,7 @@ export async function fetchOutlook(params: {
 }): Promise<OutlookResult> {
   const res = await fetch("/api/ai/outlook", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: aiHeaders(),
     body: JSON.stringify(params),
   });
   const data = await res.json();
@@ -193,4 +194,10 @@ export async function fetchCompanies(): Promise<{ industries: string[]; companie
   const res = await fetch("/api/companies");
   if (!res.ok) throw new Error("Failed to load companies");
   return res.json();
+}
+
+export async function verifyAiKey(): Promise<{ ok: boolean; error?: string }> {
+  const res = await fetch("/api/ai/verify", { method: "POST", headers: aiHeaders(), body: "{}" });
+  const data = await res.json().catch(() => ({}));
+  return res.ok ? { ok: true } : { ok: false, error: data.error || "Key check failed" };
 }
